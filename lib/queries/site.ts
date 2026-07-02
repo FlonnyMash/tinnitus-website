@@ -1,4 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
+import { Query } from "node-appwrite";
+import {
+  APPWRITE_DATABASE_ID,
+  COLLECTION_GIGS,
+  COLLECTION_SETLISTS,
+  COLLECTION_SITE_SETTINGS,
+} from "@/lib/appwrite/config";
+import { mapGig, mapSetlist } from "@/lib/appwrite/mappers";
+import { getAdminDatabases } from "@/lib/appwrite/server";
 import type {
   BandPhotosSettings,
   Gig,
@@ -9,35 +17,35 @@ import type {
 } from "@/lib/types/database";
 
 export async function getAllGigs(): Promise<GigWithSetlist[]> {
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
-  const { data: gigs, error } = await supabase
-    .from("gigs")
-    .select("*")
-    .order("gig_date", { ascending: false });
+  try {
+    const gigsResult = await databases.listDocuments({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_GIGS,
+      queries: [Query.orderDesc("gig_date")],
+    });
 
-  if (error) {
-    console.error("Failed to fetch gigs:", error.message);
+    const setlistsResult = await databases.listDocuments({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SETLISTS,
+    });
+
+    const setlistByGigId = new Map(
+      setlistsResult.documents.map((document) => [
+        document.gig_id as string,
+        mapSetlist(document),
+      ]),
+    );
+
+    return gigsResult.documents.map((document) => ({
+      ...mapGig(document),
+      setlist: setlistByGigId.get(document.$id) ?? null,
+    }));
+  } catch (error) {
+    console.error("Failed to fetch gigs:", error);
     return [];
   }
-
-  const { data: setlists, error: setlistError } = await supabase
-    .from("setlists")
-    .select("*");
-
-  if (setlistError) {
-    console.error("Failed to fetch setlists:", setlistError.message);
-    return (gigs ?? []).map((gig) => ({ ...gig, setlist: null }));
-  }
-
-  const setlistByGigId = new Map(
-    (setlists ?? []).map((setlist) => [setlist.gig_id, setlist as Setlist]),
-  );
-
-  return (gigs ?? []).map((gig) => ({
-    ...(gig as Gig),
-    setlist: setlistByGigId.get(gig.id) ?? null,
-  }));
 }
 
 export function splitGigsByDate(gigs: GigWithSetlist[]) {
@@ -55,19 +63,25 @@ export function splitGigsByDate(gigs: GigWithSetlist[]) {
 }
 
 export async function getSiteSetting<T>(key: string, fallback: T): Promise<T> {
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
-  const { data, error } = await supabase
-    .from("site_settings")
-    .select("value")
-    .eq("key", key)
-    .maybeSingle();
+  try {
+    const result = await databases.listDocuments({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SITE_SETTINGS,
+      queries: [Query.equal("key", key), Query.limit(1)],
+    });
 
-  if (error || !data?.value) {
+    const document = result.documents[0];
+    if (!document?.value) {
+      return fallback;
+    }
+
+    return JSON.parse(document.value as string) as T;
+  } catch (error) {
+    console.error(`Failed to fetch site setting "${key}":`, error);
     return fallback;
   }
-
-  return data.value as T;
 }
 
 export async function getHomepageSeo(): Promise<HomepageSeo> {
@@ -88,3 +102,5 @@ export async function getHeroSettings(): Promise<HeroSettings> {
 export async function getBandPhotos(): Promise<BandPhotosSettings> {
   return getSiteSetting<BandPhotosSettings>("band_photos", { urls: [] });
 }
+
+export type { Gig, GigWithSetlist, Setlist };

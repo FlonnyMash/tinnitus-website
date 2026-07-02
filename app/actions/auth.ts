@@ -1,50 +1,70 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { Account, AppwriteException } from "node-appwrite";
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createAdminClient,
+  createSessionClient,
+  deleteSessionCookie,
+  getSessionCookie,
+  isAdminUser,
+  setSessionCookie,
+} from "@/lib/appwrite/server";
+
+function authErrorMessage(error: unknown): string {
+  if (error instanceof AppwriteException) {
+    return error.message;
+  }
+  return "Authentifizierung fehlgeschlagen";
+}
 
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const redirectTo = String(formData.get("redirectTo") ?? "/admin");
 
-  const supabase = await createClient();
+  let session;
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}&redirectTo=${encodeURIComponent(redirectTo)}`);
+  try {
+    const adminAccount = new Account(createAdminClient());
+    session = await adminAccount.createEmailPasswordSession({
+      email,
+      password,
+    });
+  } catch (error) {
+    redirect(
+      `/login?error=${encodeURIComponent(authErrorMessage(error))}&redirectTo=${encodeURIComponent(redirectTo)}`,
+    );
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionAccount = new Account(createSessionClient(session.secret));
+  const user = await sessionAccount.get();
 
-  if (!user) {
-    redirect("/login?error=Authentication failed");
+  if (!isAdminUser(user)) {
+    await sessionAccount.deleteSession({ sessionId: "current" });
+    redirect(
+      `/login?error=${encodeURIComponent("Kein Administratorzugriff")}&redirectTo=${encodeURIComponent(redirectTo)}`,
+    );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "admin") {
-    await supabase.auth.signOut();
-    redirect("/login?error=You do not have admin access");
-  }
-
+  await setSessionCookie(session);
   redirect(redirectTo);
 }
 
 export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const sessionSecret = await getSessionCookie();
+
+  if (sessionSecret) {
+    try {
+      const account = new Account(createSessionClient(sessionSecret));
+      await account.deleteSession({ sessionId: "current" });
+    } catch {
+      // Session may already be invalid; still clear the cookie.
+    }
+  }
+
+  await deleteSessionCookie();
   redirect("/login");
 }
 

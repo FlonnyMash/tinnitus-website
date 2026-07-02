@@ -1,8 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { ID, Query } from "node-appwrite";
+import { InputFile } from "node-appwrite/file";
 import { requireAdmin } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import {
+  APPWRITE_DATABASE_ID,
+  BUCKET_BAND_PHOTOS,
+  BUCKET_LOGOS,
+  COLLECTION_GIGS,
+  COLLECTION_SETLISTS,
+  COLLECTION_SITE_SETTINGS,
+} from "@/lib/appwrite/config";
+import {
+  getAdminDatabases,
+  getAdminStorage,
+  getFileViewUrl,
+} from "@/lib/appwrite/server";
+import type { BandPhotosSettings, HeroSettings } from "@/lib/types/database";
 
 function parseSongs(raw: string) {
   return raw
@@ -11,22 +26,70 @@ function parseSongs(raw: string) {
     .filter(Boolean);
 }
 
+async function upsertSiteSetting(key: string, value: object) {
+  const databases = getAdminDatabases();
+  const jsonValue = JSON.stringify(value);
+
+  const existing = await databases.listDocuments({
+    databaseId: APPWRITE_DATABASE_ID,
+    collectionId: COLLECTION_SITE_SETTINGS,
+    queries: [Query.equal("key", key), Query.limit(1)],
+  });
+
+  if (existing.documents[0]) {
+    await databases.updateDocument({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SITE_SETTINGS,
+      documentId: existing.documents[0].$id,
+      data: { key, value: jsonValue },
+    });
+    return;
+  }
+
+  await databases.createDocument({
+    databaseId: APPWRITE_DATABASE_ID,
+    collectionId: COLLECTION_SITE_SETTINGS,
+    documentId: ID.unique(),
+    data: { key, value: jsonValue },
+  });
+}
+
+async function getSiteSettingValue<T>(key: string, fallback: T): Promise<T> {
+  const databases = getAdminDatabases();
+
+  const result = await databases.listDocuments({
+    databaseId: APPWRITE_DATABASE_ID,
+    collectionId: COLLECTION_SITE_SETTINGS,
+    queries: [Query.equal("key", key), Query.limit(1)],
+  });
+
+  const document = result.documents[0];
+  if (!document?.value) {
+    return fallback;
+  }
+
+  return JSON.parse(document.value as string) as T;
+}
+
 export async function createGig(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
   const gig_date = String(formData.get("gig_date") ?? "");
   const venue = String(formData.get("venue") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
 
-  const { error } = await supabase.from("gigs").insert({
-    gig_date,
-    venue,
-    description,
-  });
-
-  if (error) {
-    return { error: error.message };
+  try {
+    await databases.createDocument({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_GIGS,
+      documentId: ID.unique(),
+      data: { gig_date, venue, description },
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -37,20 +100,24 @@ export async function createGig(formData: FormData) {
 
 export async function updateGig(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
   const gig_date = String(formData.get("gig_date") ?? "");
   const venue = String(formData.get("venue") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
 
-  const { error } = await supabase
-    .from("gigs")
-    .update({ gig_date, venue, description })
-    .eq("id", id);
-
-  if (error) {
-    return { error: error.message };
+  try {
+    await databases.updateDocument({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_GIGS,
+      documentId: id,
+      data: { gig_date, venue, description },
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -61,14 +128,34 @@ export async function updateGig(formData: FormData) {
 
 export async function deleteGig(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
 
-  const { error } = await supabase.from("gigs").delete().eq("id", id);
+  try {
+    const setlists = await databases.listDocuments({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SETLISTS,
+      queries: [Query.equal("gig_id", id)],
+    });
 
-  if (error) {
-    return { error: error.message };
+    for (const setlist of setlists.documents) {
+      await databases.deleteDocument({
+        databaseId: APPWRITE_DATABASE_ID,
+        collectionId: COLLECTION_SETLISTS,
+        documentId: setlist.$id,
+      });
+    }
+
+    await databases.deleteDocument({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_GIGS,
+      documentId: id,
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Löschen fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -80,25 +167,41 @@ export async function deleteGig(formData: FormData) {
 
 export async function upsertSetlist(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
   const gig_id = String(formData.get("gig_id") ?? "");
   const title = String(formData.get("title") ?? "").trim() || null;
   const notes = String(formData.get("notes") ?? "").trim() || null;
   const songs = parseSongs(String(formData.get("songs") ?? ""));
 
-  const { error } = await supabase.from("setlists").upsert(
-    {
-      gig_id,
-      title,
-      notes,
-      songs,
-    },
-    { onConflict: "gig_id" },
-  );
+  try {
+    const existing = await databases.listDocuments({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SETLISTS,
+      queries: [Query.equal("gig_id", gig_id), Query.limit(1)],
+    });
 
-  if (error) {
-    return { error: error.message };
+    const data = { gig_id, title, notes, songs };
+
+    if (existing.documents[0]) {
+      await databases.updateDocument({
+        databaseId: APPWRITE_DATABASE_ID,
+        collectionId: COLLECTION_SETLISTS,
+        documentId: existing.documents[0].$id,
+        data,
+      });
+    } else {
+      await databases.createDocument({
+        databaseId: APPWRITE_DATABASE_ID,
+        collectionId: COLLECTION_SETLISTS,
+        documentId: ID.unique(),
+        data,
+      });
+    }
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -108,14 +211,20 @@ export async function upsertSetlist(formData: FormData) {
 
 export async function deleteSetlist(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
 
-  const { error } = await supabase.from("setlists").delete().eq("id", id);
-
-  if (error) {
-    return { error: error.message };
+  try {
+    await databases.deleteDocument({
+      databaseId: APPWRITE_DATABASE_ID,
+      collectionId: COLLECTION_SETLISTS,
+      documentId: id,
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Löschen fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -125,18 +234,16 @@ export async function deleteSetlist(formData: FormData) {
 
 export async function updateHomepageSeo(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
 
-  const { error } = await supabase.from("site_settings").upsert({
-    key: "homepage_seo",
-    value: { title, description },
-  });
-
-  if (error) {
-    return { error: error.message };
+  try {
+    await upsertSiteSetting("homepage_seo", { title, description });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -146,18 +253,16 @@ export async function updateHomepageSeo(formData: FormData) {
 
 export async function updateHeroSettings(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
 
   const logo_url = String(formData.get("logo_url") ?? "").trim();
   const hero_image_url = String(formData.get("hero_image_url") ?? "").trim();
 
-  const { error } = await supabase.from("site_settings").upsert({
-    key: "hero",
-    value: { logo_url, hero_image_url },
-  });
-
-  if (error) {
-    return { error: error.message };
+  try {
+    await upsertSiteSetting("hero", { logo_url, hero_image_url });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
+    };
   }
 
   revalidatePath("/");
@@ -167,111 +272,91 @@ export async function updateHeroSettings(formData: FormData) {
 
 export async function uploadMedia(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
+  const storage = getAdminStorage();
 
   const bucket = String(formData.get("bucket") ?? "");
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "No file selected" };
+    return { error: "Keine Datei ausgewählt" };
   }
 
   const extension = file.name.split(".").pop() ?? "bin";
-  const filePath = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const fileId = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: false,
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const inputFile = InputFile.fromBuffer(buffer, file.name);
+
+    await storage.createFile({
+      bucketId: bucket,
+      fileId,
+      file: inputFile,
     });
 
-  if (uploadError) {
-    return { error: uploadError.message };
-  }
+    const publicUrl = getFileViewUrl(bucket, fileId);
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(filePath);
+    if (bucket === BUCKET_LOGOS) {
+      const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
+        logo_url: "",
+        hero_image_url: "",
+      });
 
-  if (bucket === "logos") {
-  const { data: heroSetting } = await supabase
-    .from("site_settings")
-    .select("value")
-    .eq("key", "hero")
-    .maybeSingle();
+      await upsertSiteSetting("hero", { ...currentHero, logo_url: publicUrl });
+    }
 
-    const currentHero = (heroSetting?.value ?? {
-      logo_url: "",
-      hero_image_url: "",
-    }) as { logo_url: string; hero_image_url: string };
+    if (bucket === BUCKET_BAND_PHOTOS) {
+      const currentPhotos = await getSiteSettingValue<BandPhotosSettings>(
+        "band_photos",
+        { urls: [] },
+      );
 
-    await supabase.from("site_settings").upsert({
-      key: "hero",
-      value: { ...currentHero, logo_url: publicUrl },
-    });
-  }
+      await upsertSiteSetting("band_photos", {
+        urls: [...currentPhotos.urls, publicUrl],
+      });
+    }
 
-  if (bucket === "band-photos") {
-    const { data: photosSetting } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "band_photos")
-      .maybeSingle();
+    if (bucket === BUCKET_BAND_PHOTOS && formData.get("use_as_hero") === "on") {
+      const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
+        logo_url: "",
+        hero_image_url: "",
+      });
 
-    const currentPhotos = (photosSetting?.value ?? { urls: [] }) as {
-      urls: string[];
+      await upsertSiteSetting("hero", {
+        ...currentHero,
+        hero_image_url: publicUrl,
+      });
+    }
+
+    revalidatePath("/");
+    revalidatePath("/admin/media");
+    return { success: true, url: publicUrl };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Upload fehlgeschlagen",
     };
-
-    await supabase.from("site_settings").upsert({
-      key: "band_photos",
-      value: { urls: [...currentPhotos.urls, publicUrl] },
-    });
   }
-
-  if (bucket === "band-photos" && formData.get("use_as_hero") === "on") {
-    const { data: heroSetting } = await supabase
-      .from("site_settings")
-      .select("value")
-      .eq("key", "hero")
-      .maybeSingle();
-
-    const currentHero = (heroSetting?.value ?? {
-      logo_url: "",
-      hero_image_url: "",
-    }) as { logo_url: string; hero_image_url: string };
-
-    await supabase.from("site_settings").upsert({
-      key: "hero",
-      value: { ...currentHero, hero_image_url: publicUrl },
-    });
-  }
-
-  revalidatePath("/");
-  revalidatePath("/admin/media");
-  return { success: true, url: publicUrl };
 }
 
 export async function removeBandPhoto(formData: FormData) {
   await requireAdmin();
-  const supabase = await createClient();
 
   const url = String(formData.get("url") ?? "");
 
-  const { data: photosSetting } = await supabase
-    .from("site_settings")
-    .select("value")
-    .eq("key", "band_photos")
-    .maybeSingle();
+  try {
+    const currentPhotos = await getSiteSettingValue<BandPhotosSettings>(
+      "band_photos",
+      { urls: [] },
+    );
 
-  const currentPhotos = (photosSetting?.value ?? { urls: [] }) as {
-    urls: string[];
-  };
-
-  await supabase.from("site_settings").upsert({
-    key: "band_photos",
-    value: { urls: currentPhotos.urls.filter((item) => item !== url) },
-  });
+    await upsertSiteSetting("band_photos", {
+      urls: currentPhotos.urls.filter((item) => item !== url),
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Löschen fehlgeschlagen",
+    };
+  }
 
   revalidatePath("/");
   revalidatePath("/admin/media");

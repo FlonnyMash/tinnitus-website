@@ -1,36 +1,17 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import type { Profile } from "@/lib/types/database";
+import {
+  getLoggedInUser,
+  isAdminUser,
+} from "@/lib/appwrite/server";
+import type { Models } from "node-appwrite";
 
-export async function getSessionUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user;
-}
-
-export async function getProfile(): Promise<Profile | null> {
-  const supabase = await createClient();
-  const user = await getSessionUser();
-
-  if (!user) {
-    return null;
-  }
-
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  return data;
+export async function getSessionUser(): Promise<Models.User | null> {
+  return getLoggedInUser();
 }
 
 export async function isAdmin(): Promise<boolean> {
-  const profile = await getProfile();
-  return profile?.role === "admin";
+  const user = await getSessionUser();
+  return user ? isAdminUser(user) : false;
 }
 
 export async function requireAdmin() {
@@ -40,11 +21,9 @@ export async function requireAdmin() {
     redirect("/login?redirectTo=/admin");
   }
 
-  const profile = await getProfile();
-
-  if (profile?.role !== "admin") {
+  if (!isAdminUser(user)) {
     redirect("/?error=unauthorized");
   }
 
-  return { user, profile };
+  return { user };
 }

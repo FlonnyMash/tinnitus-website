@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <CardHeader>
           <CardTitle>Admin Login</CardTitle>
           <CardDescription className="text-zinc-400">
-            Sign in with your Supabase admin account.
+            Melden Sie sich mit Ihrem Appwrite-Administratorkonto an.
           </CardDescription>
         </CardHeader>
         <CardContent>
