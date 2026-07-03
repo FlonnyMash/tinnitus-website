@@ -73,14 +73,15 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="3. Hosting und Server-Logfiles (Cloudflare Pages)">
+      <LegalSection title="3. Hosting und Server-Logfiles (Cloudflare Pages/Workers)">
         <p>
           Die öffentliche Website wird über{" "}
-          <strong className="text-zinc-300">Cloudflare Pages</strong> bereitgestellt.
-          Anbieter ist <strong className="text-zinc-300">Cloudflare, Inc.</strong>{" "}
-          (101 Townsend St, San Francisco, CA 94107, USA). Beim Aufruf unserer
-          Website werden dabei automatisch Informationen in sogenannten
-          Server-Logfiles erfasst. Dies kann insbesondere folgende Daten umfassen:
+          <strong className="text-zinc-300">Cloudflare Pages/Workers</strong>{" "}
+          bereitgestellt. Anbieter ist{" "}
+          <strong className="text-zinc-300">Cloudflare, Inc.</strong> (101 Townsend
+          St, San Francisco, CA 94107, USA). Beim Aufruf unserer Website werden
+          dabei automatisch Informationen in sogenannten Server-Logfiles erfasst.
+          Dies kann insbesondere folgende Daten umfassen:
         </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>IP-Adresse</li>
@@ -118,6 +119,25 @@ export default function DatenschutzPage() {
           </a>
           .
         </p>
+        <p>
+          Da Cloudflare, Inc. in den USA ansässig ist, kann eine Übermittlung
+          personenbezogener Daten in ein Drittland erfolgen, für das kein
+          Angemessenheitsbeschluss der Europäischen Kommission vorliegt. Die
+          Übermittlung stützt sich auf geeignete Garantien gemäß Art. 46 DSGVO,
+          insbesondere die von Cloudflare bereitgestellten Standardvertragsklauseln
+          (Standard Contractual Clauses, SCC) im Rahmen des
+          Auftragsverarbeitungsvertrags (Data Processing Addendum). Weitere
+          Informationen finden Sie unter{" "}
+          <a
+            href="https://www.cloudflare.com/cloudflare-customer-dpa/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-red-400 transition-colors hover:text-red-300"
+          >
+            cloudflare.com/cloudflare-customer-dpa
+          </a>
+          .
+        </p>
       </LegalSection>
 
       <LegalSection title="4. Backend, Datenbank und Inhalte (Appwrite)">
@@ -138,8 +158,7 @@ export default function DatenschutzPage() {
           Zugriffsdaten wie IP-Adresse, Zeitpunkt des Zugriffs, angeforderte
           Ressourcen und Browserinformationen verarbeitet werden. Rechtsgrundlage
           ist Art. 6 Abs. 1 lit. f DSGVO, da die Verarbeitung für die technische
-          Bereitstellung der Website erforderlich ist. Eine gesonderte
-          Verbindungsprüfung beim Seitenaufruf ist in Abschnitt 5 beschrieben.
+          Bereitstellung der Website erforderlich ist.
         </p>
         <p>
           Appwrite fungiert als Auftragsverarbeiter im Sinne von Art. 28 DSGVO.
@@ -196,7 +215,7 @@ export default function DatenschutzPage() {
           Appwrite verarbeitet die Anmeldedaten als Auftragsverarbeiter im Sinne
           von Art. 28 DSGVO. Wir speichern Ihre Zugangsdaten nicht dauerhaft auf
           unseren eigenen Servern; nach erfolgreicher Anmeldung wird lediglich
-          ein technisch notwendiges Session-Cookie gesetzt (siehe Abschnitt 8).
+          ein technisch notwendiges Session-Cookie gesetzt (siehe Abschnitt 7).
         </p>
       </LegalSection>
 
@@ -284,7 +303,7 @@ export default function DatenschutzPage() {
         <p>
           Wir setzen derzeit keine Webanalyse-Tools, Social-Media-Plugins oder
           eingebettete Social-Media-Inhalte ein. Externe Social-Media-Links sind
-          in Abschnitt 10 beschrieben. Es werden keine Newsletter-Formulare oder
+          in Abschnitt 9 beschrieben. Es werden keine Newsletter-Formulare oder
           öffentlichen Kontaktformulare eingesetzt, die personenbezogene Daten auf
           unseren Servern speichern würden.
         </p>
