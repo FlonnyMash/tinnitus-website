@@ -47,10 +47,18 @@ export type HomepageSeo = {
 export type HeroSettings = {
   logo_url: string;
   hero_image_url: string;
+  logo_alt: string;
+  hero_alt: string;
+};
+
+export type BandPhoto = {
+  url: string;
+  alt: string;
+  caption: string;
 };
 
 export type BandPhotosSettings = {
-  urls: string[];
+  photos: BandPhoto[];
 };
 
 export type SiteSettingKey = "homepage_seo" | "hero" | "band_photos";

@@ -230,11 +230,16 @@ async function seedSiteSettings() {
     },
     {
       key: "hero",
-      value: JSON.stringify({ logo_url: "", hero_image_url: "" }),
+      value: JSON.stringify({
+        logo_url: "",
+        hero_image_url: "",
+        logo_alt: "",
+        hero_alt: "",
+      }),
     },
     {
       key: "band_photos",
-      value: JSON.stringify({ urls: [] }),
+      value: JSON.stringify({ photos: [] }),
     },
   ];
 

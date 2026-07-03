@@ -17,6 +17,7 @@ import type {
   HomepageSeo,
   Setlist,
 } from "@/lib/types/database";
+import { normalizeBandPhotos } from "@/lib/media/band-photos";
 
 export async function getAllGigs(): Promise<GigWithSetlist[]> {
   try {
@@ -91,14 +92,22 @@ export async function getHomepageSeo(): Promise<HomepageSeo> {
 }
 
 export async function getHeroSettings(): Promise<HeroSettings> {
-  return getSiteSetting<HeroSettings>("hero", {
+  const hero = await getSiteSetting<Partial<HeroSettings>>("hero", {
     logo_url: "",
     hero_image_url: "",
   });
+
+  return {
+    logo_url: hero.logo_url ?? "",
+    hero_image_url: hero.hero_image_url ?? "",
+    logo_alt: hero.logo_alt ?? "",
+    hero_alt: hero.hero_alt ?? "",
+  };
 }
 
 export async function getBandPhotos(): Promise<BandPhotosSettings> {
-  return getSiteSetting<BandPhotosSettings>("band_photos", { urls: [] });
+  const raw = await getSiteSetting<unknown>("band_photos", { photos: [] });
+  return normalizeBandPhotos(raw);
 }
 
 export type { Gig, GigWithSetlist, Setlist };

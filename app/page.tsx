@@ -38,7 +38,7 @@ export default async function HomePage() {
     getBandPhotos(),
   ]);
   const { upcoming, past } = splitGigsByDate(gigs);
-  const bandPhotoUrl = bandPhotos.urls[0];
+  const bandPhoto = bandPhotos.photos[0];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -46,7 +46,7 @@ export default async function HomePage() {
       <main>
         <HeroSection hero={hero} />
         <FeaturesSection />
-        <AboutSection bandPhotoUrl={bandPhotoUrl} />
+        <AboutSection bandPhoto={bandPhoto} />
         <UpcomingGigs gigs={upcoming} />
         <PastGigs gigs={past} />
       </main>

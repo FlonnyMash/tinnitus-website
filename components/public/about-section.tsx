@@ -1,10 +1,13 @@
 import Image from "next/image";
+import type { BandPhoto } from "@/lib/types/database";
 
 type AboutSectionProps = {
-  bandPhotoUrl?: string;
+  bandPhoto?: BandPhoto;
 };
 
-export function AboutSection({ bandPhotoUrl }: AboutSectionProps) {
+export function AboutSection({ bandPhoto }: AboutSectionProps) {
+  const alt = bandPhoto?.alt || "Tinnitus Band";
+
   return (
     <section
       id="ueber-uns"
@@ -27,27 +30,32 @@ export function AboutSection({ bandPhotoUrl }: AboutSectionProps) {
           </p>
         </div>
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
-          {bandPhotoUrl ? (
-            <Image
-              src={bandPhotoUrl}
-              alt="Tinnitus Band"
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-red-950/30">
-              <div className="text-center">
-                <p className="font-display text-6xl tracking-wider text-red-500/40">
-                  TINNITUS
-                </p>
-                <p className="mt-2 text-sm uppercase tracking-[0.3em] text-zinc-600">
-                  Rock Coverband
-                </p>
+        <div>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900">
+            {bandPhoto?.url ? (
+              <Image
+                src={bandPhoto.url}
+                alt={alt}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-950 to-red-950/30">
+                <div className="text-center">
+                  <p className="font-display text-6xl tracking-wider text-red-500/40">
+                    TINNITUS
+                  </p>
+                  <p className="mt-2 text-sm uppercase tracking-[0.3em] text-zinc-600">
+                    Rock Coverband
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
+            )}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/60 via-transparent to-transparent" />
+          </div>
+          {bandPhoto?.caption ? (
+            <p className="mt-3 text-sm text-zinc-400">{bandPhoto.caption}</p>
+          ) : null}
         </div>
       </div>
     </section>

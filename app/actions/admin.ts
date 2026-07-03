@@ -18,6 +18,7 @@ import {
   updateDocument,
 } from "@/lib/appwrite/rest";
 import { getFileViewUrl } from "@/lib/appwrite/server";
+import { createBandPhoto, normalizeBandPhotos } from "@/lib/media/band-photos";
 import type { BandPhotosSettings, HeroSettings, SetlistEntry } from "@/lib/types/database";
 
 function parseSetlistEntries(raw: string): SetlistEntry[] | { error: string } {
@@ -112,6 +113,28 @@ async function getSiteSettingValue<T>(key: string, fallback: T): Promise<T> {
   }
 
   return JSON.parse(document.value as string) as T;
+}
+
+const defaultHeroSettings: HeroSettings = {
+  logo_url: "",
+  hero_image_url: "",
+  logo_alt: "",
+  hero_alt: "",
+};
+
+async function getBandPhotosValue(): Promise<BandPhotosSettings> {
+  const raw = await getSiteSettingValue<unknown>("band_photos", { photos: [] });
+  return normalizeBandPhotos(raw);
+}
+
+async function getHeroSettingsValue(): Promise<HeroSettings> {
+  const hero = await getSiteSettingValue<Partial<HeroSettings>>("hero", defaultHeroSettings);
+  return {
+    logo_url: hero.logo_url ?? "",
+    hero_image_url: hero.hero_image_url ?? "",
+    logo_alt: hero.logo_alt ?? "",
+    hero_alt: hero.hero_alt ?? "",
+  };
 }
 
 export async function createGig(formData: FormData) {
@@ -304,9 +327,16 @@ export async function updateHeroSettings(formData: FormData) {
 
   const logo_url = String(formData.get("logo_url") ?? "").trim();
   const hero_image_url = String(formData.get("hero_image_url") ?? "").trim();
+  const logo_alt = String(formData.get("logo_alt") ?? "").trim();
+  const hero_alt = String(formData.get("hero_alt") ?? "").trim();
 
   try {
-    await upsertSiteSetting("hero", { logo_url, hero_image_url });
+    await upsertSiteSetting("hero", {
+      logo_url,
+      hero_image_url,
+      logo_alt,
+      hero_alt,
+    });
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
@@ -340,30 +370,21 @@ export async function uploadMedia(formData: FormData) {
     const publicUrl = getFileViewUrl(BUCKET_LOGOS, fileId);
 
     if (kind === "logo") {
-      const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
-        logo_url: "",
-        hero_image_url: "",
-      });
+      const currentHero = await getHeroSettingsValue();
 
       await upsertSiteSetting("hero", { ...currentHero, logo_url: publicUrl });
     }
 
     if (kind === "band-photo") {
-      const currentPhotos = await getSiteSettingValue<BandPhotosSettings>(
-        "band_photos",
-        { urls: [] },
-      );
+      const currentPhotos = await getBandPhotosValue();
 
       await upsertSiteSetting("band_photos", {
-        urls: [...currentPhotos.urls, publicUrl],
+        photos: [...currentPhotos.photos, createBandPhoto(publicUrl)],
       });
     }
 
     if (kind === "band-photo" && formData.get("use_as_hero") === "on") {
-      const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
-        logo_url: "",
-        hero_image_url: "",
-      });
+      const currentHero = await getHeroSettingsValue();
 
       await upsertSiteSetting("hero", {
         ...currentHero,
@@ -387,17 +408,49 @@ export async function removeBandPhoto(formData: FormData) {
   const url = String(formData.get("url") ?? "");
 
   try {
-    const currentPhotos = await getSiteSettingValue<BandPhotosSettings>(
-      "band_photos",
-      { urls: [] },
-    );
+    const currentPhotos = await getBandPhotosValue();
 
     await upsertSiteSetting("band_photos", {
-      urls: currentPhotos.urls.filter((item) => item !== url),
+      photos: currentPhotos.photos.filter((photo) => photo.url !== url),
     });
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Löschen fehlgeschlagen",
+    };
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/media");
+  return { success: true };
+}
+
+export async function updateBandPhotoMetadata(formData: FormData) {
+  await requireAdmin();
+
+  const url = String(formData.get("url") ?? "").trim();
+  const alt = String(formData.get("alt") ?? "").trim();
+  const caption = String(formData.get("caption") ?? "").trim();
+
+  if (!url) {
+    return { error: "Kein Foto ausgewählt" };
+  }
+
+  try {
+    const currentPhotos = await getBandPhotosValue();
+    const photoExists = currentPhotos.photos.some((photo) => photo.url === url);
+
+    if (!photoExists) {
+      return { error: "Foto nicht gefunden" };
+    }
+
+    await upsertSiteSetting("band_photos", {
+      photos: currentPhotos.photos.map((photo) =>
+        photo.url === url ? { ...photo, alt, caption } : photo,
+      ),
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Speichern fehlgeschlagen",
     };
   }
 

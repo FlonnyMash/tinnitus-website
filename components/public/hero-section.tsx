@@ -19,7 +19,7 @@ export function HeroSection({ hero }: HeroSectionProps) {
         <div className="absolute inset-0">
           <Image
             src={hero.hero_image_url}
-            alt="Tinnitus live"
+            alt={hero.hero_alt || "Tinnitus live"}
             fill
             priority
             className="object-cover opacity-25"
