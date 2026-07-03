@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { LoginForm } from "@/components/admin/login-form";
 import { DEFAULT_LOGO } from "@/lib/brand";
+import { isAdmin } from "@/lib/auth";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -20,6 +22,10 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = (await searchParams) ?? {};
+
+  if (await isAdmin()) {
+    redirect(params.redirectTo ?? "/admin");
+  }
 
   return (
     <div className="dark flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4">
