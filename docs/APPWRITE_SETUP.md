@@ -42,7 +42,6 @@ npm run dev
 
 - Public site loads at `http://localhost:3000`
 - Admin login at `http://localhost:3000/login`
-- Browser network tab shows a successful Appwrite ping on page load
 
 ## 5. Cloudflare deployment
 
@@ -54,3 +53,5 @@ Appwrite needs `APPWRITE_API_KEY` in **two** places in the Cloudflare dashboard:
 Add `APPWRITE_API_KEY` as an **encrypted secret** in both locations. The `NEXT_PUBLIC_APPWRITE_*` variables must also be set in both places (or at least in build variables and as plain Worker variables).
 
 After adding runtime secrets, redeploy with `npm run deploy` (the script uses `--keep-vars` so dashboard secrets are not wiped).
+
+If you later add browser-side Appwrite calls, register each production hostname under **Overview → Platforms → Add platform → Web** (e.g. `tinnitus-website.luca-bakan.workers.dev` and your custom domain).

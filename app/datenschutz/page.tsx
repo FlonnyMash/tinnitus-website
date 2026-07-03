@@ -157,21 +157,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="5. Verbindungsprüfung beim Seitenaufruf">
-        <p>
-          Beim Laden jeder Seite führt unsere Website eine technische
-          Verbindungsprüfung (<code className="text-zinc-300">client.ping()</code>
-          ) zum Appwrite-Dienst aus. Dabei wird eine Anfrage an den Appwrite-Endpunkt
-          gesendet. Dabei können insbesondere IP-Adresse und Zeitpunkt der Anfrage
-          verarbeitet werden.
-        </p>
-        <p>
-          Zweck ist die Überprüfung der Erreichbarkeit des Backends. Rechtsgrundlage
-          ist Art. 6 Abs. 1 lit. f DSGVO.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="6. Kontakt per E-Mail">
+      <LegalSection title="5. Kontakt per E-Mail">
         <p>
           Wenn Sie uns per E-Mail kontaktieren, verarbeiten wir die von Ihnen
           mitgeteilten Daten (z. B. Name, E-Mail-Adresse, Inhalt der Nachricht)
@@ -191,7 +177,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Administrator-Anmeldung">
+      <LegalSection title="6. Administrator-Anmeldung">
         <p>
           Für den Zugriff auf den administrativen Bereich stellen wir unter{" "}
           <code className="text-zinc-300">/login</code> ein Anmeldeformular bereit.
@@ -214,7 +200,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Cookies und lokale Speicherung">
+      <LegalSection title="7. Cookies und lokale Speicherung">
         <p>
           Unsere öffentliche Website setzt keine Tracking-Cookies und verwendet
           kein Analyse- oder Marketing-Tracking. Es findet keine Speicherung
@@ -236,7 +222,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="9. Schriftarten">
+      <LegalSection title="8. Schriftarten">
         <p>
           Für die Darstellung der Website verwenden wir Schriftarten über{" "}
           <code className="text-zinc-300">next/font/google</code> (Bebas Neue, DM
@@ -251,7 +237,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="10. Links zu Social-Media-Plattformen">
+      <LegalSection title="9. Links zu Social-Media-Plattformen">
         <p>
           Auf unserer Website befinden sich einfache Verlinkungen zu unseren
           Profilen auf Instagram und TikTok. Es werden keine Social-Media-Plugins,
@@ -294,7 +280,7 @@ export default function DatenschutzPage() {
         </ul>
       </LegalSection>
 
-      <LegalSection title="11. Keine Analyse-Tools">
+      <LegalSection title="10. Keine Analyse-Tools">
         <p>
           Wir setzen derzeit keine Webanalyse-Tools, Social-Media-Plugins oder
           eingebettete Social-Media-Inhalte ein. Externe Social-Media-Links sind
@@ -304,7 +290,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="12. Ihre Rechte">
+      <LegalSection title="11. Ihre Rechte">
         <p>Sie haben gegenüber uns folgende Rechte hinsichtlich Ihrer personenbezogenen Daten:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
@@ -326,7 +312,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="13. Beschwerderecht">
+      <LegalSection title="12. Beschwerderecht">
         <p>
           Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über
           die Verarbeitung Ihrer personenbezogenen Daten zu beschweren. Für uns
@@ -343,7 +329,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="14. Änderungen dieser Datenschutzerklärung">
+      <LegalSection title="13. Änderungen dieser Datenschutzerklärung">
         <p>
           Wir behalten uns vor, diese Datenschutzerklärung anzupassen, damit sie
           stets den aktuellen rechtlichen Anforderungen entspricht oder

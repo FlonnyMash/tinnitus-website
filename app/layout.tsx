@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans } from "next/font/google";
-import { AppwritePing } from "@/components/appwrite-ping";
 import { Toaster } from "@/components/ui/sonner";
 import { DEFAULT_LOGO } from "@/lib/brand";
 import "./globals.css";
@@ -43,7 +42,6 @@ export default function RootLayout({
       className={`${bebasNeue.variable} ${dmSans.variable} h-full scroll-smooth bg-zinc-950 antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-950 text-zinc-100 font-sans">
-        <AppwritePing />
         {children}
         <Toaster />
       </body>
