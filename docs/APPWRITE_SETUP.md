@@ -22,7 +22,7 @@ This creates:
 
 - Database `tinnitus`
 - Collections `gigs`, `setlists`, `site_settings`
-- Storage buckets `logos`, `band-photos`
+- Storage bucket `logos` (logos, hero images, and band photos — free tier allows one bucket)
 - Seed documents for homepage SEO, hero, and band photos settings
 
 Copy the printed env vars into `.env.local`.

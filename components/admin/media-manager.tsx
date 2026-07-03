@@ -31,8 +31,8 @@ export function MediaManager({ hero, bandPhotos }: MediaManagerProps) {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
-  async function handleUpload(bucket: string, formData: FormData) {
-    formData.set("bucket", bucket);
+  async function handleUpload(kind: "logo" | "band-photo", formData: FormData) {
+    formData.set("kind", kind);
     startTransition(async () => {
       const result = await uploadMedia(formData);
       if (result.error) {
@@ -85,7 +85,7 @@ export function MediaManager({ hero, bandPhotos }: MediaManagerProps) {
           </CardHeader>
           <CardContent>
             <form
-              action={(formData) => handleUpload("logos", formData)}
+              action={(formData) => handleUpload("logo", formData)}
               className="space-y-4"
             >
               <Input
@@ -119,12 +119,12 @@ export function MediaManager({ hero, bandPhotos }: MediaManagerProps) {
           <CardHeader>
             <CardTitle>Upload Band Photo</CardTitle>
             <CardDescription className="text-zinc-400">
-              Stored in the `band-photos` bucket.
+              Stored in the shared media bucket.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form
-              action={(formData) => handleUpload("band-photos", formData)}
+              action={(formData) => handleUpload("band-photo", formData)}
               className="space-y-4"
             >
               <Input

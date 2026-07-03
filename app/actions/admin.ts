@@ -6,7 +6,6 @@ import { InputFile } from "node-appwrite/file";
 import { requireAdmin } from "@/lib/auth";
 import {
   APPWRITE_DATABASE_ID,
-  BUCKET_BAND_PHOTOS,
   BUCKET_LOGOS,
   COLLECTION_GIGS,
   COLLECTION_SETLISTS,
@@ -329,29 +328,28 @@ export async function uploadMedia(formData: FormData) {
   await requireAdmin();
   const storage = getAdminStorage();
 
-  const bucket = String(formData.get("bucket") ?? "");
+  const kind = String(formData.get("kind") ?? "");
   const file = formData.get("file");
 
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Keine Datei ausgewählt" };
   }
 
-  const extension = file.name.split(".").pop() ?? "bin";
-  const fileId = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+  const fileId = crypto.randomUUID();
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const inputFile = InputFile.fromBuffer(buffer, file.name);
 
     await storage.createFile({
-      bucketId: bucket,
+      bucketId: BUCKET_LOGOS,
       fileId,
       file: inputFile,
     });
 
-    const publicUrl = getFileViewUrl(bucket, fileId);
+    const publicUrl = getFileViewUrl(BUCKET_LOGOS, fileId);
 
-    if (bucket === BUCKET_LOGOS) {
+    if (kind === "logo") {
       const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
         logo_url: "",
         hero_image_url: "",
@@ -360,7 +358,7 @@ export async function uploadMedia(formData: FormData) {
       await upsertSiteSetting("hero", { ...currentHero, logo_url: publicUrl });
     }
 
-    if (bucket === BUCKET_BAND_PHOTOS) {
+    if (kind === "band-photo") {
       const currentPhotos = await getSiteSettingValue<BandPhotosSettings>(
         "band_photos",
         { urls: [] },
@@ -371,7 +369,7 @@ export async function uploadMedia(formData: FormData) {
       });
     }
 
-    if (bucket === BUCKET_BAND_PHOTOS && formData.get("use_as_hero") === "on") {
+    if (kind === "band-photo" && formData.get("use_as_hero") === "on") {
       const currentHero = await getSiteSettingValue<HeroSettings>("hero", {
         logo_url: "",
         hero_image_url: "",

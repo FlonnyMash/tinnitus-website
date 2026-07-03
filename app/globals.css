@@ -153,4 +153,21 @@
   .section-title {
     @apply font-display text-4xl tracking-wide text-white md:text-5xl;
   }
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.4 0 0 / 0.45) transparent;
+  }
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background: oklch(0.4 0 0 / 0.45);
+    border-radius: 9999px;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.55 0 0 / 0.6);
+  }
 }

@@ -73,11 +73,14 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="3. Hosting und Server-Logfiles">
+      <LegalSection title="3. Hosting und Server-Logfiles (Cloudflare Pages)">
         <p>
-          Beim Aufruf unserer Website werden durch den Hosting-Anbieter
-          automatisch Informationen in sogenannten Server-Logfiles erfasst. Dies
-          kann insbesondere folgende Daten umfassen:
+          Die öffentliche Website wird über{" "}
+          <strong className="text-zinc-300">Cloudflare Pages</strong> bereitgestellt.
+          Anbieter ist <strong className="text-zinc-300">Cloudflare, Inc.</strong>{" "}
+          (101 Townsend St, San Francisco, CA 94107, USA). Beim Aufruf unserer
+          Website werden dabei automatisch Informationen in sogenannten
+          Server-Logfiles erfasst. Dies kann insbesondere folgende Daten umfassen:
         </p>
         <ul className="list-disc space-y-1 pl-5">
           <li>IP-Adresse</li>
@@ -88,29 +91,55 @@ export default function DatenschutzPage() {
           <li>verwendetes Betriebssystem</li>
         </ul>
         <p>
+          Zur Auslieferung der Website kann Cloudflare zudem als Content Delivery
+          Network (CDN) eingesetzt werden. Dabei können Anfragedaten an
+          weltweit verteilte Edge-Server übermittelt werden, um die Website
+          performant und verfügbar bereitzustellen.
+        </p>
+        <p>
           Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO
           zur Sicherstellung eines stabilen, sicheren und effizienten Betriebs
-          der Website. Die Logdaten werden in der Regel nur kurzzeitig
-          gespeichert und anschließend gelöscht, sofern keine weitergehende
-          Aufbewahrung zu Sicherheits- oder Nachweiszwecken erforderlich ist.
+          der Website. Die Logdaten werden nur so lange gespeichert, wie dies
+          für den Betrieb, die Sicherheit und die Fehleranalyse erforderlich ist,
+          und anschließend gelöscht, sofern keine weitergehende Aufbewahrung zu
+          Sicherheits- oder Nachweiszwecken erforderlich ist.
+        </p>
+        <p>
+          Cloudflare fungiert als Auftragsverarbeiter im Sinne von Art. 28 DSGVO.
+          Weitere Informationen finden Sie in der Datenschutzerklärung von
+          Cloudflare unter{" "}
+          <a
+            href="https://www.cloudflare.com/privacypolicy/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-red-400 transition-colors hover:text-red-300"
+          >
+            cloudflare.com/privacypolicy
+          </a>
+          .
         </p>
       </LegalSection>
 
-      <LegalSection title="4. Bereitstellung der Website-Inhalte (Appwrite)">
+      <LegalSection title="4. Backend, Datenbank und Inhalte (Appwrite)">
         <p>
-          Für die Auslieferung öffentlicher Website-Inhalte wie Termine,
-          Setlists, SEO-Texte, Logos und Bandfotos nutzen wir{" "}
-          <strong className="text-zinc-300">Appwrite Cloud</strong> mit
-          Rechenzentrum in Frankfurt (Deutschland). Beim Laden der Website kann
-          Ihr Browser dabei Verbindungen zu Appwrite herstellen, um Inhalte
-          abzurufen.
+          Für Backend, Datenbank, Dateispeicher und Administrator-Authentifizierung
+          nutzen wir <strong className="text-zinc-300">Appwrite Cloud</strong> mit
+          Rechenzentrum in Frankfurt (Deutschland). Appwrite stellt insbesondere
+          folgende Leistungen bereit:
         </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>Datenbank und Content-API (Termine, Setlists, SEO-Texte, Medien-Metadaten)</li>
+          <li>Dateispeicher (Logos, Hero-Bilder, Bandfotos)</li>
+          <li>Authentifizierung für den administrativen Bereich (<code className="text-zinc-300">/login</code>, <code className="text-zinc-300">/admin</code>)</li>
+        </ul>
         <p>
-          Dabei können technische Zugriffsdaten wie IP-Adresse, Zeitpunkt des
-          Zugriffs, angeforderte Ressourcen und Browserinformationen verarbeitet
-          werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, da die
-          Verarbeitung für die technische Bereitstellung der Website erforderlich
-          ist.
+          Beim Laden der Website kann Ihr Browser Verbindungen zu Appwrite
+          herstellen, um Inhalte und Medien abzurufen. Dabei können technische
+          Zugriffsdaten wie IP-Adresse, Zeitpunkt des Zugriffs, angeforderte
+          Ressourcen und Browserinformationen verarbeitet werden. Rechtsgrundlage
+          ist Art. 6 Abs. 1 lit. f DSGVO, da die Verarbeitung für die technische
+          Bereitstellung der Website erforderlich ist. Eine gesonderte
+          Verbindungsprüfung beim Seitenaufruf ist in Abschnitt 5 beschrieben.
         </p>
         <p>
           Appwrite fungiert als Auftragsverarbeiter im Sinne von Art. 28 DSGVO.
@@ -162,7 +191,30 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="7. Cookies und lokale Speicherung">
+      <LegalSection title="7. Administrator-Anmeldung">
+        <p>
+          Für den Zugriff auf den administrativen Bereich stellen wir unter{" "}
+          <code className="text-zinc-300">/login</code> ein Anmeldeformular bereit.
+          Dabei werden die von Ihnen eingegebenen Daten (E-Mail-Adresse und
+          Passwort) über unsere Server an Appwrite Auth übermittelt, um Ihre
+          Identität zu prüfen und eine Sitzung zu erstellen.
+        </p>
+        <p>
+          Die Verarbeitung dient ausschließlich der Zugriffskontrolle auf den
+          Administrationsbereich. Es werden keine öffentlichen Benutzerkonten
+          angeboten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, soweit die
+          Anmeldung zur Erfüllung administrativer Aufgaben erforderlich ist,
+          andernfalls Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+        <p>
+          Appwrite verarbeitet die Anmeldedaten als Auftragsverarbeiter im Sinne
+          von Art. 28 DSGVO. Wir speichern Ihre Zugangsdaten nicht dauerhaft auf
+          unseren eigenen Servern; nach erfolgreicher Anmeldung wird lediglich
+          ein technisch notwendiges Session-Cookie gesetzt (siehe Abschnitt 8).
+        </p>
+      </LegalSection>
+
+      <LegalSection title="8. Cookies und lokale Speicherung">
         <p>
           Unsere öffentliche Website setzt keine Tracking-Cookies und verwendet
           kein Analyse- oder Marketing-Tracking. Es findet keine Speicherung
@@ -184,7 +236,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="8. Schriftarten">
+      <LegalSection title="9. Schriftarten">
         <p>
           Für die Darstellung der Website verwenden wir Schriftarten über{" "}
           <code className="text-zinc-300">next/font/google</code> (Bebas Neue, DM
@@ -199,15 +251,60 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="9. Keine Analyse-Tools">
+      <LegalSection title="10. Links zu Social-Media-Plattformen">
         <p>
-          Wir setzen derzeit keine Webanalyse-Tools, Social-Media-Plugins,
-          Newsletter-Formulare oder öffentlichen Kontaktformulare ein, die
-          personenbezogene Daten auf unseren Servern speichern würden.
+          Auf unserer Website befinden sich einfache Verlinkungen zu unseren
+          Profilen auf Instagram und TikTok. Es werden keine Social-Media-Plugins,
+          eingebettete Inhalte (Embeds), Tracking-Pixel oder vergleichbare
+          Technologien dieser Plattformen auf unserer Website eingesetzt.
+        </p>
+        <p>
+          Erst wenn Sie aktiv auf einen dieser Links klicken und die jeweilige
+          Plattform besuchen, verarbeiten die Betreiber (Meta Platforms, Inc.
+          bzw. ByteDance Ltd.) personenbezogene Daten nach deren eigenen
+          Datenschutzbestimmungen und außerhalb unserer Verantwortlichkeit.
+        </p>
+        <p>
+          Weitere Informationen finden Sie in den Datenschutzerklärungen der
+          jeweiligen Anbieter:
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            Instagram:{" "}
+            <a
+              href="https://privacycenter.instagram.com/policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-400 transition-colors hover:text-red-300"
+            >
+              privacycenter.instagram.com/policy
+            </a>
+          </li>
+          <li>
+            TikTok:{" "}
+            <a
+              href="https://www.tiktok.com/legal/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-400 transition-colors hover:text-red-300"
+            >
+              tiktok.com/legal/privacy-policy
+            </a>
+          </li>
+        </ul>
+      </LegalSection>
+
+      <LegalSection title="11. Keine Analyse-Tools">
+        <p>
+          Wir setzen derzeit keine Webanalyse-Tools, Social-Media-Plugins oder
+          eingebettete Social-Media-Inhalte ein. Externe Social-Media-Links sind
+          in Abschnitt 10 beschrieben. Es werden keine Newsletter-Formulare oder
+          öffentlichen Kontaktformulare eingesetzt, die personenbezogene Daten auf
+          unseren Servern speichern würden.
         </p>
       </LegalSection>
 
-      <LegalSection title="10. Ihre Rechte">
+      <LegalSection title="12. Ihre Rechte">
         <p>Sie haben gegenüber uns folgende Rechte hinsichtlich Ihrer personenbezogenen Daten:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Recht auf Auskunft (Art. 15 DSGVO)</li>
@@ -229,7 +326,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="11. Beschwerderecht">
+      <LegalSection title="13. Beschwerderecht">
         <p>
           Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde über
           die Verarbeitung Ihrer personenbezogenen Daten zu beschweren. Für uns
@@ -246,7 +343,7 @@ export default function DatenschutzPage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="12. Änderungen dieser Datenschutzerklärung">
+      <LegalSection title="14. Änderungen dieser Datenschutzerklärung">
         <p>
           Wir behalten uns vor, diese Datenschutzerklärung anzupassen, damit sie
           stets den aktuellen rechtlichen Anforderungen entspricht oder

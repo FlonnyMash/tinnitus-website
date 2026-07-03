@@ -24,7 +24,7 @@ function LegalSection({
 export default function ImpressumPage() {
   return (
     <LegalPageShell title="Impressum">
-      <LegalSection title="Angaben gemäß § 5 TMG">
+      <LegalSection title="Angaben gemäß § 5 DDG">
         <p>
           Christian Bakan
           <br />
@@ -33,6 +33,7 @@ export default function ImpressumPage() {
           81825 München
           <br />
           Deutschland
+          {/* USt-IdNr.: [DE...] */}
         </p>
       </LegalSection>
 
@@ -53,6 +54,18 @@ export default function ImpressumPage() {
           >
             webmaster@tinnitus-band.de
           </a>
+        </p>
+      </LegalSection>
+
+      <LegalSection title="Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV">
+        <p>
+          Christian Bakan
+          <br />
+          Bajuwarenstr. 65
+          <br />
+          81825 München
+          <br />
+          Deutschland
         </p>
       </LegalSection>
 

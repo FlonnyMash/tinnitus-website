@@ -62,7 +62,6 @@ const COLLECTION_GIGS = "gigs";
 const COLLECTION_SETLISTS = "setlists";
 const COLLECTION_SITE_SETTINGS = "site_settings";
 const BUCKET_LOGOS = "logos";
-const BUCKET_BAND_PHOTOS = "band-photos";
 
 const adminWritePermissions = [
   Permission.read(Role.any()),
@@ -311,19 +310,12 @@ async function main() {
   await migrateSetlistEntries();
   await seedSiteSettings();
 
-  await ensureBucket(BUCKET_LOGOS, "Logos", 5 * 1024 * 1024, [
+  await ensureBucket(BUCKET_LOGOS, "Media", 10 * 1024 * 1024, [
     "jpg",
     "jpeg",
     "png",
     "webp",
     "svg",
-  ]);
-
-  await ensureBucket(BUCKET_BAND_PHOTOS, "Band Photos", 10 * 1024 * 1024, [
-    "jpg",
-    "jpeg",
-    "png",
-    "webp",
     "gif",
   ]);
 

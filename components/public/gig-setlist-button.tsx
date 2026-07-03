@@ -1,15 +1,9 @@
 "use client";
 
-
-
 import { useState } from "react";
-
 import { format } from "date-fns";
-
 import { de } from "date-fns/locale";
-
-import { ListMusic } from "lucide-react";
-
+import { ListMusic, Mic2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { VariantProps } from "class-variance-authority";
 import {
@@ -54,94 +48,72 @@ export function GigSetlistButton({
         }
         onClick={() => setOpen(true)}
       >
-
         <ListMusic className="size-4" />
-
         Setlist anzeigen
-
       </Button>
 
-
-
       <Dialog
-
         open={open}
-
         onOpenChange={(nextOpen) => {
-
           if (!nextOpen) {
-
             setOpen(false);
-
           }
-
         }}
-
       >
-
-        <DialogContent className="border-zinc-800 bg-zinc-900 text-zinc-100 sm:max-w-md">
-
-          <DialogHeader>
-
-            <DialogTitle className="font-display text-2xl tracking-wide text-white">
-
-              {gig.setlist.title || "Setlist"} – {gig.venue}
-
+        <DialogContent className="dark flex max-h-[85vh] flex-col overflow-hidden border-zinc-800 bg-zinc-900 p-0 text-zinc-100 sm:max-w-md">
+          <DialogHeader className="shrink-0 border-b border-border/10 px-6 pt-6 pb-4">
+            <DialogTitle className="font-display text-xl tracking-widest text-white uppercase">
+              {(gig.setlist.title || "Setlist").toUpperCase()} –{" "}
+              {gig.venue.toUpperCase()}
             </DialogTitle>
-
-            <DialogDescription className="text-zinc-400">
-
+            <DialogDescription>
               {format(new Date(`${gig.gig_date}T12:00:00`), "dd. MMMM yyyy", {
-
                 locale: de,
-
               })}
-
             </DialogDescription>
-
           </DialogHeader>
 
-          <ol className="list-decimal space-y-3 pl-5 text-zinc-200">
-
-            {gig.setlist.entries.map((entry, index) => (
-
-              <li key={`${entry.title}-${index}`} className="leading-relaxed">
-
-                <span>{entry.title}</span>
-
-                {entry.interpret ? (
-
-                  <span className="mt-0.5 block text-sm text-zinc-400">
-
-                    {entry.interpret}
-
+          <div className="scrollbar-subtle min-h-0 flex-1 overflow-y-auto px-6 pb-6">
+            <div
+              role="list"
+              aria-label="Setlist"
+              className="flex flex-col divide-y divide-border/10 pr-4"
+            >
+              {gig.setlist.entries.map((entry, index) => (
+                <div
+                  role="listitem"
+                  key={`${entry.title}-${index}`}
+                  className="flex items-center gap-4 rounded-md px-2 py-3 transition-colors hover:bg-muted/50"
+                >
+                  <span className="w-6 shrink-0 text-right font-mono text-base font-bold text-red-500">
+                    {index + 1}
                   </span>
+                  <div className="flex min-w-0 flex-col">
+                    <span className="text-base leading-tight font-semibold text-foreground">
+                      {entry.title}
+                    </span>
+                    {entry.interpret ? (
+                      <span className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Mic2
+                          className="size-3 shrink-0 opacity-70"
+                          aria-hidden
+                        />
+                        {entry.interpret}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                ) : null}
-
-              </li>
-
-            ))}
-
-          </ol>
-
-          {gig.setlist.notes ? (
-
-            <p className="border-t border-zinc-800 pt-4 text-sm italic text-zinc-400">
-
-              {gig.setlist.notes}
-
-            </p>
-
-          ) : null}
-
+            {gig.setlist.notes ? (
+              <p className="mt-4 border-t border-border/10 pt-4 text-sm text-muted-foreground italic">
+                {gig.setlist.notes}
+              </p>
+            ) : null}
+          </div>
         </DialogContent>
-
       </Dialog>
-
     </div>
-
   );
-
 }
-

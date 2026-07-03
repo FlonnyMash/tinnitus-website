@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -36,6 +37,23 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           />
         </CardContent>
       </Card>
+      <nav
+        aria-label="Rechtliches"
+        className="mt-8 flex items-center justify-center gap-x-6 text-sm"
+      >
+        <Link
+          href="/impressum"
+          className="text-zinc-500 transition-colors hover:text-red-400"
+        >
+          Impressum
+        </Link>
+        <Link
+          href="/datenschutz"
+          className="text-zinc-500 transition-colors hover:text-red-400"
+        >
+          Datenschutzerklärung
+        </Link>
+      </nav>
     </div>
   );
 }
