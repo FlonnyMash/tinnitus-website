@@ -18,6 +18,10 @@ type EnvKey =
  * (local dev, and build-time inlined `NEXT_PUBLIC_*` values).
  */
 function readEnv(key: EnvKey): string | undefined {
+  if (process.env[key]) {
+    return process.env[key];
+  }
+
   try {
     const cfEnv = getCloudflareContext().env as Record<string, string | undefined>;
     if (cfEnv?.[key]) {
@@ -27,7 +31,7 @@ function readEnv(key: EnvKey): string | undefined {
     // Not running inside the Cloudflare context (e.g. local dev / build).
   }
 
-  return process.env[key];
+  return undefined;
 }
 
 function requireEnv(key: EnvKey): string {

@@ -4,6 +4,17 @@
   "name": "tinnitus-website",
   "compatibility_date": "2026-03-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "vars": {
+    "NEXT_PUBLIC_APPWRITE_ENDPOINT": "https://fra.cloud.appwrite.io/v1",
+    "NEXT_PUBLIC_APPWRITE_PROJECT_ID": "6a46d8f8003e5c2aaee3",
+    "NEXT_PUBLIC_APPWRITE_DATABASE_ID": "tinnitus",
+    "NEXT_PUBLIC_APPWRITE_COLLECTION_GIGS": "gigs",
+    "NEXT_PUBLIC_APPWRITE_COLLECTION_SETLISTS": "setlists",
+    "NEXT_PUBLIC_APPWRITE_COLLECTION_SITE_SETTINGS": "site_settings"
+  },
+  "secrets": {
+    "required": ["APPWRITE_API_KEY"]
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

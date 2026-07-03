@@ -16,6 +16,9 @@ function authErrorMessage(error: unknown): string {
   if (error instanceof AppwriteException) {
     return error.message;
   }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
   return "Authentifizierung fehlgeschlagen";
 }
 

@@ -45,13 +45,22 @@ npm run dev
 
 ## 5. Cloudflare deployment
 
-Appwrite needs `APPWRITE_API_KEY` in **two** places in the Cloudflare dashboard:
+### Build variables (Workers Builds → Build variables and secrets)
 
-1. **Workers Builds → Build variables and secrets** — so `next build` can inline `NEXT_PUBLIC_*` vars and pre-render metadata.
-2. **Worker → Settings → Variables and Secrets** — so the live site can read gigs, settings, and media at request time.
+Set these for every deploy build:
 
-Add `APPWRITE_API_KEY` as an **encrypted secret** in both locations. The `NEXT_PUBLIC_APPWRITE_*` variables must also be set in both places (or at least in build variables and as plain Worker variables).
+| Name | Type |
+|------|------|
+| `APPWRITE_API_KEY` | **Encrypted secret** |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT` | Text |
+| `NEXT_PUBLIC_APPWRITE_PROJECT_ID` | Text |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID` | Text |
+| `NEXT_PUBLIC_APPWRITE_COLLECTION_GIGS` | Text |
+| `NEXT_PUBLIC_APPWRITE_COLLECTION_SETLISTS` | Text |
+| `NEXT_PUBLIC_APPWRITE_COLLECTION_SITE_SETTINGS` | Text |
 
-After adding runtime secrets, redeploy with `npm run deploy` (the script uses `--keep-vars` so dashboard secrets are not wiped).
+Deploy command: `npm run deploy`
 
-If you later add browser-side Appwrite calls, register each production hostname under **Overview → Platforms → Add platform → Web** (e.g. `tinnitus-website.luca-bakan.workers.dev` and your custom domain).
+The deploy script uploads `APPWRITE_API_KEY` from the build environment to the Worker runtime via `wrangler --secrets-file`. Public Appwrite config is also defined in `wrangler.jsonc` so it is always available at runtime.
+
+If gigs or login still fail after deploy, open **Workers & Pages → tinnitus-website → Observability → Logs** while loading the site.
