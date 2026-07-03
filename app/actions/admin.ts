@@ -1,8 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { ID, Query } from "node-appwrite";
-import { InputFile } from "node-appwrite/file";
 import { requireAdmin } from "@/lib/auth";
 import {
   BUCKET_LOGOS,
@@ -12,10 +10,14 @@ import {
   getCollectionSiteSettings,
 } from "@/lib/appwrite/config";
 import {
-  getAdminDatabases,
-  getAdminStorage,
-  getFileViewUrl,
-} from "@/lib/appwrite/server";
+  AppwriteQuery,
+  createDocument,
+  createStorageFile,
+  deleteDocument,
+  listDocuments,
+  updateDocument,
+} from "@/lib/appwrite/rest";
+import { getFileViewUrl } from "@/lib/appwrite/server";
 import type { BandPhotosSettings, HeroSettings, SetlistEntry } from "@/lib/types/database";
 
 function parseSetlistEntries(raw: string): SetlistEntry[] | { error: string } {
@@ -71,17 +73,16 @@ function parseGigEntrance(formData: FormData) {
 }
 
 async function upsertSiteSetting(key: string, value: object) {
-  const databases = getAdminDatabases();
   const jsonValue = JSON.stringify(value);
 
-  const existing = await databases.listDocuments({
+  const existing = await listDocuments({
     databaseId: getAppwriteDatabaseId(),
     collectionId: getCollectionSiteSettings(),
-    queries: [Query.equal("key", key), Query.limit(1)],
+    queries: [AppwriteQuery.equal("key", key), AppwriteQuery.limit(1)],
   });
 
   if (existing.documents[0]) {
-    await databases.updateDocument({
+    await updateDocument({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionSiteSettings(),
       documentId: existing.documents[0].$id,
@@ -90,21 +91,19 @@ async function upsertSiteSetting(key: string, value: object) {
     return;
   }
 
-  await databases.createDocument({
+  await createDocument({
     databaseId: getAppwriteDatabaseId(),
     collectionId: getCollectionSiteSettings(),
-    documentId: ID.unique(),
+    documentId: crypto.randomUUID(),
     data: { key, value: jsonValue },
   });
 }
 
 async function getSiteSettingValue<T>(key: string, fallback: T): Promise<T> {
-  const databases = getAdminDatabases();
-
-  const result = await databases.listDocuments({
+  const result = await listDocuments({
     databaseId: getAppwriteDatabaseId(),
     collectionId: getCollectionSiteSettings(),
-    queries: [Query.equal("key", key), Query.limit(1)],
+    queries: [AppwriteQuery.equal("key", key), AppwriteQuery.limit(1)],
   });
 
   const document = result.documents[0];
@@ -117,7 +116,6 @@ async function getSiteSettingValue<T>(key: string, fallback: T): Promise<T> {
 
 export async function createGig(formData: FormData) {
   await requireAdmin();
-  const databases = getAdminDatabases();
 
   const gig_date = String(formData.get("gig_date") ?? "");
   const venue = String(formData.get("venue") ?? "").trim();
@@ -126,10 +124,10 @@ export async function createGig(formData: FormData) {
   const { is_free, price } = parseGigEntrance(formData);
 
   try {
-    await databases.createDocument({
+    await createDocument({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionGigs(),
-      documentId: ID.unique(),
+      documentId: crypto.randomUUID(),
       data: { gig_date, venue, location, is_free, price, description },
     });
   } catch (error) {
@@ -146,7 +144,6 @@ export async function createGig(formData: FormData) {
 
 export async function updateGig(formData: FormData) {
   await requireAdmin();
-  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
   const gig_date = String(formData.get("gig_date") ?? "");
@@ -156,7 +153,7 @@ export async function updateGig(formData: FormData) {
   const { is_free, price } = parseGigEntrance(formData);
 
   try {
-    await databases.updateDocument({
+    await updateDocument({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionGigs(),
       documentId: id,
@@ -176,26 +173,25 @@ export async function updateGig(formData: FormData) {
 
 export async function deleteGig(formData: FormData) {
   await requireAdmin();
-  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
 
   try {
-    const setlists = await databases.listDocuments({
+    const setlists = await listDocuments({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionSetlists(),
-      queries: [Query.equal("gig_id", id)],
+      queries: [AppwriteQuery.equal("gig_id", id)],
     });
 
     for (const setlist of setlists.documents) {
-      await databases.deleteDocument({
+      await deleteDocument({
         databaseId: getAppwriteDatabaseId(),
         collectionId: getCollectionSetlists(),
         documentId: setlist.$id,
       });
     }
 
-    await databases.deleteDocument({
+    await deleteDocument({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionGigs(),
       documentId: id,
@@ -215,7 +211,6 @@ export async function deleteGig(formData: FormData) {
 
 export async function upsertSetlist(formData: FormData) {
   await requireAdmin();
-  const databases = getAdminDatabases();
 
   const gig_id = String(formData.get("gig_id") ?? "");
   const title = String(formData.get("title") ?? "").trim() || "Setlist";
@@ -229,26 +224,26 @@ export async function upsertSetlist(formData: FormData) {
   const entries = JSON.stringify(parsedEntries);
 
   try {
-    const existing = await databases.listDocuments({
+    const existing = await listDocuments({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionSetlists(),
-      queries: [Query.equal("gig_id", gig_id), Query.limit(1)],
+      queries: [AppwriteQuery.equal("gig_id", gig_id), AppwriteQuery.limit(1)],
     });
 
     const data = { gig_id, title, notes, entries, songs: [] };
 
     if (existing.documents[0]) {
-      await databases.updateDocument({
+      await updateDocument({
         databaseId: getAppwriteDatabaseId(),
         collectionId: getCollectionSetlists(),
         documentId: existing.documents[0].$id,
         data,
       });
     } else {
-      await databases.createDocument({
+      await createDocument({
         databaseId: getAppwriteDatabaseId(),
         collectionId: getCollectionSetlists(),
-        documentId: ID.unique(),
+        documentId: crypto.randomUUID(),
         data,
       });
     }
@@ -265,12 +260,11 @@ export async function upsertSetlist(formData: FormData) {
 
 export async function deleteSetlist(formData: FormData) {
   await requireAdmin();
-  const databases = getAdminDatabases();
 
   const id = String(formData.get("id") ?? "");
 
   try {
-    await databases.deleteDocument({
+    await deleteDocument({
       databaseId: getAppwriteDatabaseId(),
       collectionId: getCollectionSetlists(),
       documentId: id,
@@ -326,7 +320,6 @@ export async function updateHeroSettings(formData: FormData) {
 
 export async function uploadMedia(formData: FormData) {
   await requireAdmin();
-  const storage = getAdminStorage();
 
   const kind = String(formData.get("kind") ?? "");
   const file = formData.get("file");
@@ -338,13 +331,10 @@ export async function uploadMedia(formData: FormData) {
   const fileId = crypto.randomUUID();
 
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const inputFile = InputFile.fromBuffer(buffer, file.name);
-
-    await storage.createFile({
+    await createStorageFile({
       bucketId: BUCKET_LOGOS,
       fileId,
-      file: inputFile,
+      file,
     });
 
     const publicUrl = getFileViewUrl(BUCKET_LOGOS, fileId);

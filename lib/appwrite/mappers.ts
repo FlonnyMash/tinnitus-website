@@ -1,9 +1,9 @@
-import type { Models } from "node-appwrite";
+import type { AppwriteDocument } from "@/lib/appwrite/rest";
 import type { Gig, Setlist, SetlistEntry } from "@/lib/types/database";
 
-type AppwriteDocument = Models.Document & Record<string, unknown>;
+type AppwriteDocumentRecord = AppwriteDocument & Record<string, unknown>;
 
-function parseSetlistEntries(document: AppwriteDocument): SetlistEntry[] {
+function parseSetlistEntries(document: AppwriteDocumentRecord): SetlistEntry[] {
   const rawEntries = document.entries;
   if (typeof rawEntries === "string" && rawEntries.trim()) {
     try {
@@ -46,7 +46,7 @@ function parseSetlistEntries(document: AppwriteDocument): SetlistEntry[] {
   return [];
 }
 
-export function mapGig(document: AppwriteDocument): Gig {
+export function mapGig(document: AppwriteDocumentRecord): Gig {
   return {
     id: document.$id,
     gig_date: document.gig_date as string,
@@ -60,7 +60,7 @@ export function mapGig(document: AppwriteDocument): Gig {
   };
 }
 
-export function mapSetlist(document: AppwriteDocument): Setlist {
+export function mapSetlist(document: AppwriteDocumentRecord): Setlist {
   return {
     id: document.$id,
     gig_id: document.gig_id as string,

@@ -1,11 +1,14 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { Account, AppwriteException, Users } from "node-appwrite";
 import { requireAdmin } from "@/lib/auth";
 import {
-  createAdminClient,
-  createSessionClient,
+  AppwriteRestError,
+  createEmailPasswordSession,
+  deleteCurrentSession,
+  getUser,
+} from "@/lib/appwrite/rest";
+import {
   deleteSessionCookie,
   getSessionCookie,
   isAdminUser,
@@ -13,7 +16,7 @@ import {
 } from "@/lib/appwrite/server";
 
 function authErrorMessage(error: unknown): string {
-  if (error instanceof AppwriteException) {
+  if (error instanceof AppwriteRestError) {
     return error.message;
   }
   if (error instanceof Error && error.message) {
@@ -30,11 +33,7 @@ export async function signIn(formData: FormData) {
   let session;
 
   try {
-    const account = new Account(createAdminClient());
-    session = await account.createEmailPasswordSession({
-      email,
-      password,
-    });
+    session = await createEmailPasswordSession({ email, password });
   } catch (error) {
     redirect(
       `/login?error=${encodeURIComponent(authErrorMessage(error))}&redirectTo=${encodeURIComponent(redirectTo)}`,
@@ -49,12 +48,10 @@ export async function signIn(formData: FormData) {
 
   let user;
   try {
-    const users = new Users(createAdminClient());
-    user = await users.get({ userId: session.userId });
+    user = await getUser(session.userId);
   } catch (error) {
-    const sessionAccount = new Account(createSessionClient(session.secret));
     try {
-      await sessionAccount.deleteSession({ sessionId: "current" });
+      await deleteCurrentSession(session.secret);
     } catch {
       // Session cleanup is best-effort.
     }
@@ -64,8 +61,7 @@ export async function signIn(formData: FormData) {
   }
 
   if (!isAdminUser(user)) {
-    const sessionAccount = new Account(createSessionClient(session.secret));
-    await sessionAccount.deleteSession({ sessionId: "current" });
+    await deleteCurrentSession(session.secret);
     redirect(
       `/login?error=${encodeURIComponent("Kein Administratorzugriff")}&redirectTo=${encodeURIComponent(redirectTo)}`,
     );
@@ -80,8 +76,7 @@ export async function signOut() {
 
   if (sessionSecret) {
     try {
-      const account = new Account(createSessionClient(sessionSecret));
-      await account.deleteSession({ sessionId: "current" });
+      await deleteCurrentSession(sessionSecret);
     } catch {
       // Session may already be invalid; still clear the cookie.
     }

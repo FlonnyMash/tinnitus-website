@@ -1,5 +1,13 @@
 import { execSync } from "node:child_process";
 import { unlinkSync, writeFileSync } from "node:fs";
+import { platform } from "node:os";
+
+if (platform() === "win32") {
+  console.warn(
+    "WARNING: Deploying OpenNext from Windows can produce broken Workers bundles. " +
+      "Prefer Cloudflare Workers Builds (Linux) or WSL for production deploys.",
+  );
+}
 
 const SECRETS_FILE = ".cf-deploy-secrets";
 

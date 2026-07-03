@@ -3,9 +3,9 @@ import {
   getLoggedInUser,
   isAdminUser,
 } from "@/lib/appwrite/server";
-import type { Models } from "node-appwrite";
+import type { AppwriteUser } from "@/lib/appwrite/server";
 
-export async function getSessionUser(): Promise<Models.User | null> {
+export async function getSessionUser(): Promise<AppwriteUser | null> {
   return getLoggedInUser();
 }
 
