@@ -15,6 +15,8 @@ import {
   splitGigsByDate,
 } from "@/lib/queries/site";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getHomepageSeo();
 

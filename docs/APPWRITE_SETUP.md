@@ -43,3 +43,14 @@ npm run dev
 - Public site loads at `http://localhost:3000`
 - Admin login at `http://localhost:3000/login`
 - Browser network tab shows a successful Appwrite ping on page load
+
+## 5. Cloudflare deployment
+
+Appwrite needs `APPWRITE_API_KEY` in **two** places in the Cloudflare dashboard:
+
+1. **Workers Builds → Build variables and secrets** — so `next build` can inline `NEXT_PUBLIC_*` vars and pre-render metadata.
+2. **Worker → Settings → Variables and Secrets** — so the live site can read gigs, settings, and media at request time.
+
+Add `APPWRITE_API_KEY` as an **encrypted secret** in both locations. The `NEXT_PUBLIC_APPWRITE_*` variables must also be set in both places (or at least in build variables and as plain Worker variables).
+
+After adding runtime secrets, redeploy with `npm run deploy` (the script uses `--keep-vars` so dashboard secrets are not wiped).

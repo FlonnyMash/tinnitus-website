@@ -14,13 +14,15 @@ function createBaseClient() {
     .setProject(APPWRITE_PROJECT_ID);
 }
 
-let adminClient: Client | null = null;
-
 export function createAdminClient() {
-  if (!adminClient) {
-    adminClient = createBaseClient().setKey(process.env.APPWRITE_API_KEY!);
+  const apiKey = process.env.APPWRITE_API_KEY;
+  if (!apiKey) {
+    throw new Error(
+      "APPWRITE_API_KEY is not set. Add it as a Worker secret in Cloudflare (Settings → Variables and Secrets), not only as a build variable.",
+    );
   }
-  return adminClient;
+
+  return createBaseClient().setKey(apiKey);
 }
 
 export function createSessionClient(sessionSecret?: string) {
