@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand/brand-logo";
 import { LoginForm } from "@/components/admin/login-form";
 import { DEFAULT_LOGO } from "@/lib/brand";
@@ -37,6 +38,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           />
         </CardContent>
       </Card>
+      <Link href="/" className="mt-6">
+        <Button variant="ghost" size="sm">
+          Zurück zur Website
+        </Button>
+      </Link>
       <nav
         aria-label="Rechtliches"
         className="mt-8 flex items-center justify-center gap-x-6 text-sm"

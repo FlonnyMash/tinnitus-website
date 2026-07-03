@@ -47,11 +47,18 @@ export function AdminNav() {
             </Link>
           ))}
         </nav>
-        <form action={signOut}>
-          <Button type="submit" variant="outline" size="sm">
-            Sign out
-          </Button>
-        </form>
+        <div className="flex items-center gap-2">
+          <Link href="/" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm">
+              Zurück zur Website
+            </Button>
+          </Link>
+          <form action={signOut}>
+            <Button type="submit" variant="outline" size="sm">
+              Sign out
+            </Button>
+          </form>
+        </div>
       </div>
     </header>
   );
