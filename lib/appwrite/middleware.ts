@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   ADMIN_LABEL,
-  APPWRITE_ENDPOINT,
-  APPWRITE_PROJECT_ID,
-  SESSION_COOKIE,
+  getAppwriteEndpoint,
+  getAppwriteProjectId,
+  getSessionCookieName,
 } from "./config";
 
 type AppwriteUser = {
@@ -14,9 +14,9 @@ async function getUserFromSession(
   sessionSecret: string,
 ): Promise<AppwriteUser | null> {
   try {
-    const response = await fetch(`${APPWRITE_ENDPOINT}/account`, {
+    const response = await fetch(`${getAppwriteEndpoint()}/account`, {
       headers: {
-        "X-Appwrite-Project": APPWRITE_PROJECT_ID,
+        "X-Appwrite-Project": getAppwriteProjectId(),
         "X-Appwrite-Session": sessionSecret,
       },
     });
@@ -32,7 +32,7 @@ async function getUserFromSession(
 }
 
 export async function updateSession(request: NextRequest) {
-  const sessionSecret = request.cookies.get(SESSION_COOKIE)?.value;
+  const sessionSecret = request.cookies.get(getSessionCookieName())?.value;
   const user = sessionSecret ? await getUserFromSession(sessionSecret) : null;
 
   const pathname = request.nextUrl.pathname;

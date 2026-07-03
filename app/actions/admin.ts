@@ -5,11 +5,11 @@ import { ID, Query } from "node-appwrite";
 import { InputFile } from "node-appwrite/file";
 import { requireAdmin } from "@/lib/auth";
 import {
-  APPWRITE_DATABASE_ID,
   BUCKET_LOGOS,
-  COLLECTION_GIGS,
-  COLLECTION_SETLISTS,
-  COLLECTION_SITE_SETTINGS,
+  getAppwriteDatabaseId,
+  getCollectionGigs,
+  getCollectionSetlists,
+  getCollectionSiteSettings,
 } from "@/lib/appwrite/config";
 import {
   getAdminDatabases,
@@ -75,15 +75,15 @@ async function upsertSiteSetting(key: string, value: object) {
   const jsonValue = JSON.stringify(value);
 
   const existing = await databases.listDocuments({
-    databaseId: APPWRITE_DATABASE_ID,
-    collectionId: COLLECTION_SITE_SETTINGS,
+    databaseId: getAppwriteDatabaseId(),
+    collectionId: getCollectionSiteSettings(),
     queries: [Query.equal("key", key), Query.limit(1)],
   });
 
   if (existing.documents[0]) {
     await databases.updateDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SITE_SETTINGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSiteSettings(),
       documentId: existing.documents[0].$id,
       data: { key, value: jsonValue },
     });
@@ -91,8 +91,8 @@ async function upsertSiteSetting(key: string, value: object) {
   }
 
   await databases.createDocument({
-    databaseId: APPWRITE_DATABASE_ID,
-    collectionId: COLLECTION_SITE_SETTINGS,
+    databaseId: getAppwriteDatabaseId(),
+    collectionId: getCollectionSiteSettings(),
     documentId: ID.unique(),
     data: { key, value: jsonValue },
   });
@@ -102,8 +102,8 @@ async function getSiteSettingValue<T>(key: string, fallback: T): Promise<T> {
   const databases = getAdminDatabases();
 
   const result = await databases.listDocuments({
-    databaseId: APPWRITE_DATABASE_ID,
-    collectionId: COLLECTION_SITE_SETTINGS,
+    databaseId: getAppwriteDatabaseId(),
+    collectionId: getCollectionSiteSettings(),
     queries: [Query.equal("key", key), Query.limit(1)],
   });
 
@@ -127,8 +127,8 @@ export async function createGig(formData: FormData) {
 
   try {
     await databases.createDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_GIGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionGigs(),
       documentId: ID.unique(),
       data: { gig_date, venue, location, is_free, price, description },
     });
@@ -157,8 +157,8 @@ export async function updateGig(formData: FormData) {
 
   try {
     await databases.updateDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_GIGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionGigs(),
       documentId: id,
       data: { gig_date, venue, location, is_free, price, description },
     });
@@ -182,22 +182,22 @@ export async function deleteGig(formData: FormData) {
 
   try {
     const setlists = await databases.listDocuments({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SETLISTS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSetlists(),
       queries: [Query.equal("gig_id", id)],
     });
 
     for (const setlist of setlists.documents) {
       await databases.deleteDocument({
-        databaseId: APPWRITE_DATABASE_ID,
-        collectionId: COLLECTION_SETLISTS,
+        databaseId: getAppwriteDatabaseId(),
+        collectionId: getCollectionSetlists(),
         documentId: setlist.$id,
       });
     }
 
     await databases.deleteDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_GIGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionGigs(),
       documentId: id,
     });
   } catch (error) {
@@ -230,8 +230,8 @@ export async function upsertSetlist(formData: FormData) {
 
   try {
     const existing = await databases.listDocuments({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SETLISTS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSetlists(),
       queries: [Query.equal("gig_id", gig_id), Query.limit(1)],
     });
 
@@ -239,15 +239,15 @@ export async function upsertSetlist(formData: FormData) {
 
     if (existing.documents[0]) {
       await databases.updateDocument({
-        databaseId: APPWRITE_DATABASE_ID,
-        collectionId: COLLECTION_SETLISTS,
+        databaseId: getAppwriteDatabaseId(),
+        collectionId: getCollectionSetlists(),
         documentId: existing.documents[0].$id,
         data,
       });
     } else {
       await databases.createDocument({
-        databaseId: APPWRITE_DATABASE_ID,
-        collectionId: COLLECTION_SETLISTS,
+        databaseId: getAppwriteDatabaseId(),
+        collectionId: getCollectionSetlists(),
         documentId: ID.unique(),
         data,
       });
@@ -271,8 +271,8 @@ export async function deleteSetlist(formData: FormData) {
 
   try {
     await databases.deleteDocument({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SETLISTS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSetlists(),
       documentId: id,
     });
   } catch (error) {

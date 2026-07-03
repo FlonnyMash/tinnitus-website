@@ -1,9 +1,9 @@
 import { Query } from "node-appwrite";
 import {
-  APPWRITE_DATABASE_ID,
-  COLLECTION_GIGS,
-  COLLECTION_SETLISTS,
-  COLLECTION_SITE_SETTINGS,
+  getAppwriteDatabaseId,
+  getCollectionGigs,
+  getCollectionSetlists,
+  getCollectionSiteSettings,
 } from "@/lib/appwrite/config";
 import { mapGig, mapSetlist } from "@/lib/appwrite/mappers";
 import { getAdminDatabases } from "@/lib/appwrite/server";
@@ -21,14 +21,14 @@ export async function getAllGigs(): Promise<GigWithSetlist[]> {
 
   try {
     const gigsResult = await databases.listDocuments({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_GIGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionGigs(),
       queries: [Query.orderDesc("gig_date")],
     });
 
     const setlistsResult = await databases.listDocuments({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SETLISTS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSetlists(),
     });
 
     const setlistByGigId = new Map(
@@ -67,8 +67,8 @@ export async function getSiteSetting<T>(key: string, fallback: T): Promise<T> {
 
   try {
     const result = await databases.listDocuments({
-      databaseId: APPWRITE_DATABASE_ID,
-      collectionId: COLLECTION_SITE_SETTINGS,
+      databaseId: getAppwriteDatabaseId(),
+      collectionId: getCollectionSiteSettings(),
       queries: [Query.equal("key", key), Query.limit(1)],
     });
 
